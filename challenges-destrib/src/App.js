@@ -2,16 +2,25 @@ import './App.css';
 import { users } from './DB/users.js';
 import { challengeBucket } from './DB/challengeBucket';
 import { useEffect, useState } from 'react';
-//for testing we will just grab 3 tasks and wait 1 min for completion
-//use state and functional style only
 
 function App() {
-  const [challengeBuck, setchallengeBucket] = useState(challengeBucket);
-  const [usersChallengeTasks, setUsersChallengeTasks] = useState(users.challengeTasks);
-  const [date, setDate] = useState();
+  const [challengeBuck, setchallengeBucket] = useState([]);
+  const [usersChallengeTasks, setUsersChallengeTasks] = useState([]);
+  const [days, setDays] = useState(0);
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [timer, setTimer] = useState();
 
-  let cb = challengeBuck;
-  let uCT = usersChallengeTasks;
+  let cb;
+  let uCT;
+  let time;
+
+  if(localStorage.getItem('challengeBucket') !== null && localStorage.getItem('users') !== null){
+    cb = JSON.parse(localStorage.getItem('challengeBucket'));
+    uCT = JSON.parse(localStorage.getItem('users')).challengeTasks.taskList;
+    time = JSON.parse(localStorage.getItem('users')).challengeTasks.timeLeftForTaskList;
+  }
 
   const getRandomTasks = (i, j, numberOfRandomTasks) => {
     let randomNumber;
@@ -24,9 +33,24 @@ function App() {
       j--;
       i++;
     }
-    //console.log('uTC::', uCT);
+    
     setUsersChallengeTasks([...uCT]);
-    setTimeHandler();
+  }
+
+  const finishTaskHandler = (i) =>{
+    let user = JSON.parse(localStorage.getItem('users'));
+    user.finishedTasks.push(i);
+    localStorage.setItem('users', JSON.stringify(user));
+  }
+
+  const setMockStorage = () =>{
+    localStorage.setItem('challengeBucket', JSON.stringify(challengeBucket));
+    localStorage.setItem('users', JSON.stringify(users));
+  }
+
+  const deleteMockStorage = () =>{
+    localStorage.removeItem('challengeBucket');
+    localStorage.removeItem('users');
   }
 
   const refreshTasks = () => {
@@ -34,49 +58,65 @@ function App() {
   }
 
   const setTimeHandler = () =>{
-    localStorage.endTime = +new Date + 604800000;
+    let user = JSON.parse(localStorage.getItem('users'));
+    user.challengeTasks.timeLeftForTaskList = +new Date + 30000;
+    localStorage.setItem('users', JSON.stringify(user));
+    setTimer(time);
   }
 
   const clearTimeHandler = () =>{
-    localStorage.removeItem('endTime');
+    let user = JSON.parse(localStorage.getItem('users'));
+    user.challengeTasks.timeLeftForTaskList = 0;
+    localStorage.setItem('users', JSON.stringify(user));
+    setTimer(0);
+    setDays(0);
+    setHours(0);
+    setMinutes(0);
+    setSeconds(0);
   }
 
   useEffect(() => {
-    if(localStorage.getItem('endTime')){
+    if(timer !== 0){
       const interval = setInterval(() => {
         var now = new Date().getTime();
-        var distance = localStorage.endTime - now;
+        var distance = time - now;
       
-        // Time calculations for days, hours, minutes and seconds
         var days = Math.floor(distance / (1000 * 60 * 60 * 24));
         var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        setDate(days + ' ' + hours + ' ' + minutes + ' ' + seconds);
-      }, 1000);
-    
-      return (distance) => {
         if(distance < 0){
-          clearInterval(interval);
-          console.log('Dunzo');
+          setDays(0);
+          setHours(0);
+          setMinutes(0);
+          setSeconds(0);
+        }else{
+          setDays(days);
+          setHours(hours);
+          setMinutes(minutes);
+          setSeconds(seconds);
         }
-      }
+      }, 1000);
+      return () => clearInterval(interval);
     }
-  }, [localStorage.getItem('endTime')]);
+  }, [days, hours, minutes, seconds, timer]);
 
   return (
     <div className="App">
+      <button onClick={setMockStorage}>Set Storage</button>
+      <button onClick={deleteMockStorage}>Delete Storage</button>
       <button onClick={()=>getRandomTasks(0, 7, 3)}>Get Tasks</button>
       {
-        usersChallengeTasks.map(i => {
-          return <p key={Math.random()}>{i.taskName}</p>
+        usersChallengeTasks.map((i, index) => {
+          return (<p key={Math.random()}>{i.taskName}
+          <button onClick={()=> finishTaskHandler(i.id)}>Done</button></p>)
         })
       }
       <button onClick={refreshTasks}>refreshTasks</button>
       <button onClick={setTimeHandler}>reset Time</button>
       <button onClick={clearTimeHandler}>clear time</button>
-      <p>{date}</p>
+      <p>{days + ' ' + hours + ' ' + minutes + ' ' + seconds}</p>
     </div>
   );
 }

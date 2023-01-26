@@ -3,5 +3,9 @@ export let users = {
         userName: 'dan',
         email: 'dan@300.com',
         phone: '1234567890',
-        challengeTasks: []
+        challengeTasks: {
+            taskList: [],
+            timeLeftForTaskList: 0
+        },
+        finishedTasks: []
 };

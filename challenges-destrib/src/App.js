@@ -61,7 +61,7 @@ function App() {
     let user = JSON.parse(localStorage.getItem('users'));
     user.challengeTasks.timeLeftForTaskList = +new Date + 30000;
     localStorage.setItem('users', JSON.stringify(user));
-    setTimer(time);
+    setTimer(JSON.parse(localStorage.getItem('users')).challengeTasks.timeLeftForTaskList);
   }
 
   const clearTimeHandler = () =>{
@@ -76,6 +76,7 @@ function App() {
   }
 
   useEffect(() => {
+    console.log(timer);
     if(timer !== 0){
       const interval = setInterval(() => {
         var now = new Date().getTime();
@@ -100,7 +101,9 @@ function App() {
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [days, hours, minutes, seconds, timer]);
+  }, [timer]);
+
+  console.log(timer);
 
   return (
     <div className="App">

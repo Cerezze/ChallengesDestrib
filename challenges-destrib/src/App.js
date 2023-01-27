@@ -4,7 +4,7 @@ import { challengeBucket } from './DB/challengeBucket';
 import { useEffect, useState } from 'react';
 
 function App() {
-  const [challengeBuck, setchallengeBucket] = useState([]);
+  //const [challengeBuck, setchallengeBucket] = useState([]);
   const [usersChallengeTasks, setUsersChallengeTasks] = useState([]);
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
@@ -12,35 +12,48 @@ function App() {
   const [seconds, setSeconds] = useState(0);
   const [timer, setTimer] = useState();
 
-  let cb;
-  let uCT;
-  let time;
+  /*let cb;
+  let u;
+  let time;*/
 
-  if(localStorage.getItem('challengeBucket') !== null && localStorage.getItem('users') !== null){
+  /*if(localStorage.getItem('challengeBucket') !== null && localStorage.getItem('users') !== null){
     cb = JSON.parse(localStorage.getItem('challengeBucket'));
-    uCT = JSON.parse(localStorage.getItem('users')).challengeTasks.taskList;
+    u = JSON.parse(localStorage.getItem('users'));
     time = JSON.parse(localStorage.getItem('users')).challengeTasks.timeLeftForTaskList;
-  }
+  }*/
 
   const getRandomTasks = (i, j, numberOfRandomTasks) => {
-    let randomNumber;
-    while(i < numberOfRandomTasks){
-      randomNumber = Math.floor(Math.random() * j);
-      uCT.push(cb[randomNumber]);
-      const firstArr = cb.slice(0, cb.indexOf(cb[randomNumber]));
-      const secondArr = cb.slice(cb.indexOf(cb[randomNumber]) + 1);
-      cb = [...firstArr, ...secondArr];
-      j--;
-      i++;
+    let cb = JSON.parse(localStorage.getItem('challengeBucket'));
+    let u = JSON.parse(localStorage.getItem('users'));
+    if(usersChallengeTasks.length === 0){
+      let randomNumber;
+        while(i < numberOfRandomTasks){
+          randomNumber = Math.floor(Math.random() * j);
+          u.challengeTasks.taskList.push(cb[randomNumber]);
+          const firstArr = cb.slice(0, cb.indexOf(cb[randomNumber]));
+          const secondArr = cb.slice(cb.indexOf(cb[randomNumber]) + 1);
+          cb = [...firstArr, ...secondArr];
+          j--;
+          i++;
+        }
+        localStorage.setItem('users', JSON.stringify(u));
+        setUsersChallengeTasks([...u.challengeTasks.taskList]);
     }
-    
-    setUsersChallengeTasks([...uCT]);
   }
 
   const finishTaskHandler = (i) =>{
     let user = JSON.parse(localStorage.getItem('users'));
-    user.finishedTasks.push(i);
+    user.finishedTasks.push(user.challengeTasks.taskList[i]);
+
+    let uk 
+    uk = user.challengeTasks.taskList.filter((x, index) =>{
+      return index !== i;
+    });
+
+    user.challengeTasks.taskList = uk;
+
     localStorage.setItem('users', JSON.stringify(user));
+    setUsersChallengeTasks([...user.challengeTasks.taskList]);
   }
 
   const setMockStorage = () =>{
@@ -54,6 +67,9 @@ function App() {
   }
 
   const refreshTasks = () => {
+    let user = JSON.parse(localStorage.getItem('users'));
+    user.challengeTasks.taskList = [];
+    localStorage.setItem('users', JSON.stringify(user));
     setUsersChallengeTasks([]);
   }
 
@@ -80,7 +96,7 @@ function App() {
     if(timer !== 0){
       const interval = setInterval(() => {
         var now = new Date().getTime();
-        var distance = time - now;
+        var distance = JSON.parse(localStorage.getItem('users')).challengeTasks.timeLeftForTaskList - now;
       
         var days = Math.floor(distance / (1000 * 60 * 60 * 24));
         var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -103,8 +119,6 @@ function App() {
     }
   }, [timer]);
 
-  console.log(timer);
-
   return (
     <div className="App">
       <button onClick={setMockStorage}>Set Storage</button>
@@ -113,7 +127,7 @@ function App() {
       {
         usersChallengeTasks.map((i, index) => {
           return (<p key={Math.random()}>{i.taskName}
-          <button onClick={()=> finishTaskHandler(i.id)}>Done</button></p>)
+          <button onClick={()=> finishTaskHandler(index)}>Done</button></p>)
         })
       }
       <button onClick={refreshTasks}>refreshTasks</button>

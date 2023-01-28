@@ -4,7 +4,8 @@ import { challengeBucket } from './DB/challengeBucket';
 import { useEffect, useState } from 'react';
 
 function App() {
-  //const [challengeBuck, setchallengeBucket] = useState([]);
+  const [challengeBuck, setchallengeBucket] = useState([]);
+  const [finishedTasks, setFinishedTasks] = useState([]);
   const [usersChallengeTasks, setUsersChallengeTasks] = useState([]);
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
@@ -12,18 +13,17 @@ function App() {
   const [seconds, setSeconds] = useState(0);
   const [timer, setTimer] = useState();
 
-  /*let cb;
-  let u;
-  let time;*/
-
-  /*if(localStorage.getItem('challengeBucket') !== null && localStorage.getItem('users') !== null){
-    cb = JSON.parse(localStorage.getItem('challengeBucket'));
-    u = JSON.parse(localStorage.getItem('users'));
-    time = JSON.parse(localStorage.getItem('users')).challengeTasks.timeLeftForTaskList;
-  }*/
+  useEffect(()=>{
+    if(localStorage.getItem('challengeBucket') !== null){
+      let cb1 = JSON.parse(localStorage.getItem('challengeBucket'));
+      setchallengeBucket([...cb1]);
+      console.log(cb1);
+    }
+  },[]);
 
   const getRandomTasks = (i, j, numberOfRandomTasks) => {
-    let cb = JSON.parse(localStorage.getItem('challengeBucket'));
+    let cb = challengeBuck;
+    console.log(cb);
     let u = JSON.parse(localStorage.getItem('users'));
     if(usersChallengeTasks.length === 0){
       let randomNumber;
@@ -41,15 +41,41 @@ function App() {
     }
   }
 
+  const alterChallengeBucket = () => {
+    if(finishedTasks.length > 0){
+      let arr1 = challengeBuck;
+      let arr2 = finishedTasks;
+
+      let res = arr1.filter((i, index) =>{
+        return !arr2.find(element => {
+          return element.id === i.id;
+        });
+      });
+      //console.log(res);
+      setchallengeBucket([...res]);
+    }
+  }
+
+  useEffect(() => {
+    alterChallengeBucket();
+  }, [finishedTasks.length]);
+
   const finishTaskHandler = (i) =>{
     let user = JSON.parse(localStorage.getItem('users'));
+    let cb = JSON.parse(localStorage.getItem('challengeBucket'));
+    let userObj = {
+      userName: user.userName,
+      timesCompleted: 0
+    };
+    cb[user.challengeTasks.taskList[i].id].listOfUsersThatCompletedTask.push(userObj);
     user.finishedTasks.push(user.challengeTasks.taskList[i]);
-
+    setFinishedTasks([...user.finishedTasks]);
     let uk 
     uk = user.challengeTasks.taskList.filter((x, index) =>{
       return index !== i;
     });
 
+    localStorage.setItem('challengeBucket', JSON.stringify(cb));
     user.challengeTasks.taskList = uk;
 
     localStorage.setItem('users', JSON.stringify(user));
@@ -123,7 +149,7 @@ function App() {
     <div className="App">
       <button onClick={setMockStorage}>Set Storage</button>
       <button onClick={deleteMockStorage}>Delete Storage</button>
-      <button onClick={()=>getRandomTasks(0, 7, 3)}>Get Tasks</button>
+      <button onClick={()=>getRandomTasks(0, challengeBuck.length, 3)}>Get Tasks</button>
       {
         usersChallengeTasks.map((i, index) => {
           return (<p key={Math.random()}>{i.taskName}

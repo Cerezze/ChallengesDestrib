@@ -67,7 +67,7 @@ function App() {
       userName: user.userName,
       timesCompleted: 0
     };
-    cb[user.challengeTasks.taskList[i].id].listOfUsersThatCompletedTask.push(userObj);
+    cb[user.challengeTasks.taskList[i].id - 1].listOfUsersThatCompletedTask.push(userObj);
     user.finishedTasks.push(user.challengeTasks.taskList[i]);
     setFinishedTasks([...user.finishedTasks]);
     let uk 

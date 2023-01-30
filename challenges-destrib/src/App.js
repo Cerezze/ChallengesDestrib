@@ -19,7 +19,15 @@ function App() {
       setchallengeBucket([...cb1]);
       console.log(cb1);
     }
-  },[]);
+    /*if(localStorage.getItem('users') !== null){
+      let u = JSON.parse(localStorage.getItem('users'));
+      setUsersChallengeTasks([...u.challengeTasks.taskList]);
+    }*/
+    console.log(challengeBuck);
+    if(challengeBuck.length > 0){
+      getRandomTasks(0, challengeBuck.length, 3);
+    }
+  },[challengeBuck.length]);
 
   const getRandomTasks = (i, j, numberOfRandomTasks) => {
     let cb = challengeBuck;
@@ -38,13 +46,14 @@ function App() {
         }
         localStorage.setItem('users', JSON.stringify(u));
         setUsersChallengeTasks([...u.challengeTasks.taskList]);
-    }
+        //setTimeHandler();
+      }
   }
 
   const alterChallengeBucket = () => {
     if(finishedTasks.length > 0){
-      let arr1 = challengeBuck;
-      let arr2 = finishedTasks;
+      let arr1 = JSON.parse(localStorage.getItem('challengeBucket'));
+      let arr2 = JSON.parse(localStorage.getItem('users')).finishedTasks;
 
       let res = arr1.filter((i, index) =>{
         return !arr2.find(element => {

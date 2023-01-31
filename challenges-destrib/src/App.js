@@ -17,13 +17,13 @@ function App() {
     if(localStorage.getItem('challengeBucket') !== null){
       let cb1 = JSON.parse(localStorage.getItem('challengeBucket'));
       setchallengeBucket([...cb1]);
-      console.log(cb1);
+      //console.log('challengeBuck useFc::',challengeBuck);
     }
     /*if(localStorage.getItem('users') !== null){
       let u = JSON.parse(localStorage.getItem('users'));
       setUsersChallengeTasks([...u.challengeTasks.taskList]);
     }*/
-    console.log(challengeBuck);
+    //console.log(challengeBuck);
     if(challengeBuck.length > 0){
       getRandomTasks(0, challengeBuck.length, 3);
     }
@@ -31,37 +31,47 @@ function App() {
 
   const getRandomTasks = (i, j, numberOfRandomTasks) => {
     let cb = challengeBuck;
-    console.log(cb);
+    //console.log(cb);
     let u = JSON.parse(localStorage.getItem('users'));
-    if(usersChallengeTasks.length === 0){
+    if(usersChallengeTasks.length === 0 && u.challengeTasks.taskList.length < numberOfRandomTasks){
       let randomNumber;
+      //console.log('cb',cb);
         while(i < numberOfRandomTasks){
           randomNumber = Math.floor(Math.random() * j);
           u.challengeTasks.taskList.push(cb[randomNumber]);
+          //console.log('cb right before slice',cb);
           const firstArr = cb.slice(0, cb.indexOf(cb[randomNumber]));
           const secondArr = cb.slice(cb.indexOf(cb[randomNumber]) + 1);
           cb = [...firstArr, ...secondArr];
           j--;
           i++;
         }
-        localStorage.setItem('users', JSON.stringify(u));
-        setUsersChallengeTasks([...u.challengeTasks.taskList]);
+        
+        
         //setTimeHandler();
-      }
+    }
+    localStorage.setItem('users', JSON.stringify(u));
+    setUsersChallengeTasks([...u.challengeTasks.taskList]);
   }
 
   const alterChallengeBucket = () => {
+    let arr1 = JSON.parse(localStorage.getItem('challengeBucket'));
+    //console.log("challengeBucketFrom Local Storage inside Finieh Handler",arr1);
+    let arr2 = JSON.parse(localStorage.getItem('users'));
     if(finishedTasks.length > 0){
-      let arr1 = JSON.parse(localStorage.getItem('challengeBucket'));
-      let arr2 = JSON.parse(localStorage.getItem('users')).finishedTasks;
-
+      //console.log('users from localhost insede finishtask handler::',arr2);
       let res = arr1.filter((i, index) =>{
-        return !arr2.find(element => {
+        return !arr2.finishedTasks.find(element => {
           return element.id === i.id;
         });
       });
-      //console.log(res);
+      //console.log('finishedTasksResult::',res);
       setchallengeBucket([...res]);
+    }
+    
+    if(finishedTasks.length === 6){
+      console.log('elseif finishedTask::',finishedTasks.length);
+      taskHistoryHandler();
     }
   }
 
@@ -69,7 +79,20 @@ function App() {
     alterChallengeBucket();
   }, [finishedTasks.length]);
 
+  const taskHistoryHandler = () => {
+    let u = JSON.parse(localStorage.getItem('users'));
+    let fT = u.finishedTasks;
+    u.finishedTasks = [];
+    u.taskHistory.push(fT);
+    localStorage.setItem('users', JSON.stringify(u));
+    setFinishedTasks([]);
+  }
+
   const finishTaskHandler = (i) =>{
+    //try changing task handler to not delete the tasklist untill
+    //untill all tasks are finished. Instead of deleting the the tasks
+    //from the tasks list, make it it so it showsa message to the user
+    // that the task is finished next to the appropriate task
     let user = JSON.parse(localStorage.getItem('users'));
     let cb = JSON.parse(localStorage.getItem('challengeBucket'));
     let userObj = {
@@ -79,7 +102,7 @@ function App() {
     cb[user.challengeTasks.taskList[i].id - 1].listOfUsersThatCompletedTask.push(userObj);
     user.finishedTasks.push(user.challengeTasks.taskList[i]);
     setFinishedTasks([...user.finishedTasks]);
-    let uk 
+    let uk;
     uk = user.challengeTasks.taskList.filter((x, index) =>{
       return index !== i;
     });

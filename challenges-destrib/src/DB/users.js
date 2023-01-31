@@ -7,5 +7,6 @@ export let users = {
             taskList: [],
             timeLeftForTaskList: 0
         },
-        finishedTasks: []
+        finishedTasks: [],
+        taskHistory: []
 };

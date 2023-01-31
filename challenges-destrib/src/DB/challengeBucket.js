@@ -34,11 +34,5 @@ export let challengeBucket = [
         taskName:'task6',
         listOfUsersThatCompletedTask:[],
         listOfUsersThatHaveThisTask:[]
-    },
-    {
-        id: 7,
-        taskName:'task7',
-        listOfUsersThatCompletedTask:[],
-        listOfUsersThatHaveThisTask:[]
-    },
+    }
 ];
